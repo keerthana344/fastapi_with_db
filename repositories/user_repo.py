@@ -9,3 +9,5 @@ class UserRepo:
         self.db.add(user_obj)
         self.db.commit()
         return user_obj
+    def get_user(self, email: str):
+        return self.db.query(User).filter(User.email == email).first()
