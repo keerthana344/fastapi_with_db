@@ -1,24 +1,21 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from sqlalchemy.orm import Session
+from fastapi import Depends
 from db import get_db
-from repositories.user_repo import user_repo
-from schemas.user_schema import user_schema
-from models import user
-
-
+from models import User
+from repositories.User_repo import UserRepo
+from schemas.User_schemas import UserSchema
 router = APIRouter()
 
+
 @router.post("/signup")
-def signup(user_data: user_schema, db: Session = Depends(get_db)):
-    repo = user_repo(db)
-    new_user = user(name="New User", email=user_data.email, password=user_data.password)
-    repo.create_user(new_user)
-    return {"message": "User signup successful"}
-
-
-
-
+def signup(user: UserSchema, db: Session = Depends(get_db)):
+    user_repo = UserRepo(db)
+    # Convert Pydantic schema to SQLAlchemy model
+    db_user = User(email=user.email, password=user.password)
+    user_repo.add_user(db_user)
+    return {"message": "User signed up successfully"}
 
 @router.post("/login")
 def login():
-    return {"message": "User login successfull"}
+    return {"message": "User logged in successfully"}
