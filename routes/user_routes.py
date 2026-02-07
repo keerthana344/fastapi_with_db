@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 from db import get_db
 from models import User
-from repositories.User_repo import UserRepo
-from schemas.User_schemas import UserSchema
+from repositories.user_repo import UserRepo
+from schemas.user_schemas import UserSchema
 router = APIRouter()
 
 
