@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from db import get_db
 from models import User
-from repositories.User_repo import User_Repo
+from repositories.user_repo import User_Repo
 from schemas.user_schemas import UserSchema
 from schemas.token_schemas import Token, TokenRefresh, LoginRequest
 from utils.jwt_handler import create_tokens, verify_token
