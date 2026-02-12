@@ -1,151 +1,93 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard | Antigravity App{% endblock %}
+{% block title %}AI Chat | Antigravity App{% endblock %}
 
 {% block extra_css %}
 <style>
-    .page-header {
-        margin-bottom: 2.5rem;
-    }
-
-    .page-header h1 {
-        font-size: 1.8rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .page-header p {
-        color: var(--text-secondary);
-    }
-
-    .stat-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2.5rem;
-    }
-
-    .stat-card {
-        background: var(--card-bg);
-        padding: 1.5rem;
-        border-radius: 1.25rem;
-        border: 1px solid var(--glass-border);
+    .chat-container {
         display: flex;
-        align-items: center;
-        gap: 1.25rem;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        border-color: rgba(99, 102, 241, 0.2);
-    }
-
-    .stat-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-    }
-
-    .blue {
-        background: rgba(59, 130, 246, 0.1);
-        color: #3b82f6;
-    }
-
-    .purple {
-        background: rgba(168, 85, 247, 0.1);
-        color: #a855f7;
-    }
-
-    .green {
-        background: rgba(34, 197, 94, 0.1);
-        color: #22c55e;
-    }
-
-    .orange {
-        background: rgba(249, 115, 22, 0.1);
-        color: #f97316;
-    }
-
-    .stat-info .value {
-        font-size: 1.5rem;
-        font-weight: 600;
-        display: block;
-    }
-
-    .stat-info .label {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-    }
-
-    .main-grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 1.5rem;
-    }
-
-    .card {
+        flex-direction: column;
+        height: calc(100vh - 140px);
         background: var(--card-bg);
         border-radius: 1.25rem;
         border: 1px solid var(--glass-border);
-        padding: 1.5rem;
+        overflow: hidden;
     }
 
-    .card-header {
+    .chat-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--glass-border);
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.5rem;
+        background: rgba(99, 102, 241, 0.05);
     }
 
-    .card-title {
-        font-size: 1.1rem;
+    .chat-header h2 {
+        font-size: 1.3rem;
         font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
     }
 
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .table th {
-        text-align: left;
-        padding: 0.75rem 1rem;
-        font-size: 0.8rem;
+    .chat-header .status {
+        font-size: 0.85rem;
         color: var(--text-secondary);
-        border-bottom: 1px solid var(--glass-border);
-        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
-    .table td {
-        padding: 1rem;
-        font-size: 0.9rem;
-        border-bottom: 1px solid var(--glass-border);
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #22c55e;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
     }
 
-    .status-badge {
-        padding: 0.25rem 0.6rem;
-        border-radius: 2rem;
-        font-size: 0.75rem;
-        font-weight: 500;
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
     }
 
-    .status-success {
-        background: rgba(34, 197, 94, 0.1);
-        color: #22c55e;
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
     }
 
-    .status-pending {
-        background: rgba(234, 179, 8, 0.1);
-        color: #eab308;
+    .chat-messages::-webkit-scrollbar {
+        width: 8px;
     }
 
-    @keyframes fadeIn {
+    .chat-messages::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: var(--glass-border);
+        border-radius: 4px;
+    }
+
+    .message {
+        display: flex;
+        gap: 1rem;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
         from {
             opacity: 0;
             transform: translateY(10px);
@@ -157,122 +99,411 @@
         }
     }
 
-    .animate-in {
-        animation: fadeIn 0.5s ease-out forwards;
+    .message.user {
+        flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .message.user .message-avatar {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+    }
+
+    .message.ai .message-avatar {
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        color: var(--accent);
+    }
+
+    .message-content {
+        max-width: 70%;
+        background: var(--glass);
+        padding: 1rem 1.25rem;
+        border-radius: 1rem;
+        border: 1px solid var(--glass-border);
+        line-height: 1.6;
+    }
+
+    .message.user .message-content {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+        border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .message-time {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+    }
+
+    .chat-input-container {
+        padding: 1.5rem 2rem;
+        border-top: 1px solid var(--glass-border);
+        background: rgba(11, 15, 26, 0.5);
+    }
+
+    .chat-input-wrapper {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .chat-input {
+        flex: 1;
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        border-radius: 2rem;
+        padding: 0.9rem 1.5rem;
+        color: white;
+        font-family: inherit;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .chat-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .send-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border: none;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .send-btn:hover:not(:disabled) {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+    }
+
+    .send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: var(--text-secondary);
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+
+    .empty-state h3 {
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+    }
+
+    .loading {
+        display: flex;
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+
+    .loading-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--primary);
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .loading-dot:nth-child(1) {
+        animation-delay: -0.32s;
+    }
+
+    .loading-dot:nth-child(2) {
+        animation-delay: -0.16s;
+    }
+
+    @keyframes bounce {
+
+        0%,
+        80%,
+        100% {
+            transform: scale(0);
+        }
+
+        40% {
+            transform: scale(1);
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header animate-in">
-    <h1>Dashboard</h1>
-    <p>Welcome back, {{ user }}! Here's what's happening with your projects.</p>
-</div>
-
-<div class="stat-grid">
-    <div class="stat-card animate-in" style="animation-delay: 0.1s;">
-        <div class="stat-icon blue"><i class="fa-solid fa-briefcase"></i></div>
-        <div class="stat-info">
-            <span class="value">24</span>
-            <span class="label">Total Projects</span>
+<div class="chat-container">
+    <div class="chat-header">
+        <h2>
+            <i class="fa-solid fa-robot"></i>
+            AI Assistant
+        </h2>
+        <div class="status">
+            <span class="status-dot"></span>
+            Online
         </div>
-    </div>
-    <div class="stat-card animate-in" style="animation-delay: 0.2s;">
-        <div class="stat-icon purple"><i class="fa-solid fa-users"></i></div>
-        <div class="stat-info">
-            <span class="value">1,284</span>
-            <span class="label">New Visitors</span>
-        </div>
-    </div>
-    <div class="stat-card animate-in" style="animation-delay: 0.3s;">
-        <div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
-        <div class="stat-info">
-            <span class="value">98.2%</span>
-            <span class="label">Uptime Score</span>
-        </div>
-    </div>
-    <div class="stat-card animate-in" style="animation-delay: 0.4s;">
-        <div class="stat-icon orange"><i class="fa-solid fa-bolt"></i></div>
-        <div class="stat-info">
-            <span class="value">$4,250</span>
-            <span class="label">Monthly Revenue</span>
-        </div>
-    </div>
-</div>
-
-<div class="main-grid">
-    <div class="card animate-in" style="animation-delay: 0.5s;">
-        <div class="card-header">
-            <span class="card-title">Recent Transactions</span>
-            <a href="#" style="color: var(--primary); text-decoration: none; font-size: 0.85rem;">View All</a>
-        </div>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Customer</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div class="avatar" style="width: 28px; height: 28px; font-size: 0.7rem;">JD</div>
-                        Jane Doe
-                    </td>
-                    <td><span class="status-badge status-success">Completed</span></td>
-                    <td>Oct 24, 2023</td>
-                    <td style="font-weight: 600;">$145.00</td>
-                </tr>
-                <tr>
-                    <td style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div class="avatar" style="width: 28px; height: 28px; font-size: 0.7rem; color: #a855f7;">BS
-                        </div>
-                        Bill Smith
-                    </td>
-                    <td><span class="status-badge status-pending">Pending</span></td>
-                    <td>Oct 23, 2023</td>
-                    <td style="font-weight: 600;">$590.00</td>
-                </tr>
-                <tr>
-                    <td style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div class="avatar" style="width: 28px; height: 28px; font-size: 0.7rem; color: #3b82f6;">AM
-                        </div>
-                        Adam Mick
-                    </td>
-                    <td><span class="status-badge status-success">Completed</span></td>
-                    <td>Oct 22, 2023</td>
-                    <td style="font-weight: 600;">$1,200.00</td>
-                </tr>
-            </tbody>
-        </table>
     </div>
 
-    <div class="card animate-in" style="animation-delay: 0.6s;">
-        <div class="card-header">
-            <span class="card-title">Quick Actions</span>
+    <div class="chat-messages" id="chatMessages">
+        <div class="empty-state" id="emptyState">
+            <i class="fa-solid fa-comments"></i>
+            <h3>No messages yet</h3>
+            <p>Start a conversation with the AI assistant</p>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <button
-                style="width: 100%; padding: 0.75rem; border-radius: 0.75rem; background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer;">
-                <i class="fa-solid fa-plus" style="margin-right: 0.5rem;"></i> New Project
+    </div>
+
+    <div class="chat-input-container">
+        <div class="chat-input-wrapper">
+            <input type="text" class="chat-input" id="messageInput" placeholder="Type your message..."
+                autocomplete="off">
+            <button class="send-btn" id="sendBtn">
+                <i class="fa-solid fa-paper-plane"></i>
             </button>
-            <button
-                style="width: 100%; padding: 0.75rem; border-radius: 0.75rem; background: var(--glass); color: white; border: 1px solid var(--glass-border); font-weight: 600; cursor: pointer;">
-                <i class="fa-solid fa-file-export" style="margin-right: 0.5rem;"></i> Export Data
-            </button>
-            <div
-                style="margin-top: 1rem; padding: 1rem; border-radius: 1rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(192, 132, 252, 0.1)); border: 1px solid rgba(99, 102, 241, 0.2);">
-                <span style="font-size: 0.9rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">Upgrade to
-                    Pro</span>
-                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">Get access to advanced
-                    analytics and unlimited projects.</p>
-                <a href="#"
-                    style="font-size: 0.85rem; color: var(--primary); font-weight: 600; text-decoration: none;">Learn
-                    More →</a>
-            </div>
         </div>
     </div>
 </div>
+
+<script>
+    let currentUserId = null;
+    let authToken = null;
+
+    // Get user details and auth token from cookie
+    async function initializeChat() {
+        const userEmail = getCookie('user');
+        if (!userEmail) {
+            window.location.href = '/signin';
+            return;
+        }
+
+        // Try to get token from localStorage
+        authToken = localStorage.getItem('auth_token');
+
+        if (!authToken) {
+            console.warn('No auth token found, redirecting to signin');
+            window.location.href = '/signin';
+            return;
+        }
+
+        try {
+            const response = await fetch('/users/me', {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+
+            if (response.status === 401) {
+                window.location.href = '/signin';
+                return;
+            }
+
+            if (response.ok) {
+                const userData = await response.json();
+                currentUserId = userData.id;
+                await loadChatHistory();
+            } else {
+                console.error('Failed to get user details');
+            }
+        } catch (error) {
+            console.error('Error initializing chat:', error);
+        }
+    }
+
+    // Load chat history from backend
+    async function loadChatHistory() {
+        try {
+            const response = await fetch('/history/', {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+
+            if (response.status === 401) {
+                window.location.href = '/signin';
+                return;
+            }
+
+            if (response.ok) {
+                const messages = await response.json();
+                const chatMessages = document.getElementById('chatMessages');
+                const emptyState = document.getElementById('emptyState');
+
+                // Clear current messages to prevent duplicates during sync
+                const messageElements = chatMessages.querySelectorAll('.message:not(.empty-state)');
+                messageElements.forEach(el => el.remove());
+
+                if (messages.length > 0) {
+                    emptyState.style.display = 'none';
+                    messages.forEach(msg => {
+                        appendMessage(msg.message, msg.sender, false);
+                    });
+                    scrollToBottom();
+                }
+            }
+        } catch (error) {
+            console.error('Error loading chat history:', error);
+        }
+    }
+
+    // Send message to AI
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+
+        if (!message) return;
+
+        // Disable input while sending
+        input.disabled = true;
+        document.getElementById('sendBtn').disabled = true;
+
+        // Hide empty state
+        document.getElementById('emptyState').style.display = 'none';
+
+        // Add user message to UI
+        appendMessage(message, 'user', true);
+        input.value = '';
+
+        // Show loading indicator
+        const loadingId = showLoading();
+
+        try {
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({
+                    message: message
+                })
+            });
+
+            if (response.status === 401) {
+                window.location.href = '/signin';
+                return;
+            }
+
+            removeLoading(loadingId);
+
+            if (response.ok) {
+                const data = await response.json();
+                appendMessage(data.response, 'ai', true);
+            } else {
+                appendMessage('Sorry, I encountered an error. Please try again.', 'ai', true);
+            }
+        } catch (error) {
+            removeLoading(loadingId);
+            console.error('Error sending message:', error);
+            appendMessage('Sorry, I encountered an error. Please try again.', 'ai', true);
+        }
+
+        // Re-enable input
+        input.disabled = false;
+        document.getElementById('sendBtn').disabled = false;
+        input.focus();
+    }
+
+    // Append message to chat
+    function appendMessage(text, sender, animate) {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+        if (!animate) messageDiv.style.animation = 'none';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = sender === 'user' ? (getCookie('user')[0].toUpperCase() || 'U') : 'AI';
+
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        content.textContent = text;
+
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(content);
+        chatMessages.appendChild(messageDiv);
+
+        scrollToBottom();
+    }
+
+    // Show loading indicator
+    function showLoading() {
+        const chatMessages = document.getElementById('chatMessages');
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message ai';
+        loadingDiv.id = 'loading-' + Date.now();
+
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = 'AI';
+
+        const content = document.createElement('div');
+        content.className = 'message-content loading';
+        content.innerHTML = '<div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div>';
+
+        loadingDiv.appendChild(avatar);
+        loadingDiv.appendChild(content);
+        chatMessages.appendChild(loadingDiv);
+
+        scrollToBottom();
+        return loadingDiv.id;
+    }
+
+    // Remove loading indicator
+    function removeLoading(id) {
+        const loading = document.getElementById(id);
+        if (loading) loading.remove();
+    }
+
+    // Scroll to bottom of chat
+    function scrollToBottom() {
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Get cookie value
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
+
+    // Event listeners
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+    document.getElementById('messageInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    // Initialize on page load
+    initializeChat();
+</script>
 {% endblock %}

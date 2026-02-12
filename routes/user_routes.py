@@ -1,13 +1,22 @@
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from models import User, AuthEvent
 from sqlalchemy.orm import Session
 from db import get_db
-from models import User
 from repositories.user_repo import User_Repo
 from schemas.user_schemas import UserSchema
 from schemas.token_schemas import Token, TokenRefresh, LoginRequest
 from utils.jwt_handler import create_tokens, verify_token
 
 router = APIRouter()
+security = HTTPBearer()
+
+def get_current_user(auth: HTTPAuthorizationCredentials = Depends(security)):
+    """Extract and verify token from Authorization header."""
+    payload = verify_token(auth.credentials)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return payload
 
 
 @router.post("/signup")
@@ -35,7 +44,32 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
             headers={"WWW-Authenticate": "Bearer"}
         )
     
+    # Log login event
+    auth_event = AuthEvent(user_id=user.id, event_type="login")
+    user_repo.add_auth_event(auth_event)
+    
     return create_tokens(user.id, user.email)
+
+
+@router.get("/users/me")
+def get_me(token_payload: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get current user details from JWT token."""
+    user_repo = User_Repo(db)
+    user = user_repo.get_user_by_email(token_payload.get("email"))
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"id": user.id, "email": user.email}
+
+
+@router.post("/logout")
+def logout(user_id: int, db: Session = Depends(get_db)):
+    """Log logout event for a user."""
+    user_repo = User_Repo(db)
+    auth_event = AuthEvent(user_id=user_id, event_type="logout")
+    user_repo.add_auth_event(auth_event)
+    return {"message": "Logout event recorded"}
 
 
 @router.post("/refresh", response_model=Token)

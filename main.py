@@ -8,6 +8,7 @@ from models import Base
 from routes.user_routes import router as user_router
 from routes.ai_response_routes import router as ai_response_router
 from routes.email_routes import router as email_router
+from routes.history_routes import router as history_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -26,6 +27,7 @@ app.add_middleware(
 app.include_router(user_router)
 app.include_router(ai_response_router)
 app.include_router(email_router)
+app.include_router(history_router)
 
 # Create database tables
 engine = create_engine(DATABASE_URL)

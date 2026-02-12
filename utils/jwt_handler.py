@@ -45,5 +45,6 @@ def create_tokens(user_id: int, email: str) -> dict:
     return {
         "access_token": create_access_token(token_data),
         "refresh_token": create_refresh_token(token_data),
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "user_id": user_id
     }
