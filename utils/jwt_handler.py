@@ -2,9 +2,18 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 import os
+from dotenv import load_dotenv
+
+# Absolute first step: Load environment variables
+load_dotenv()
 
 # JWT Configuration
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-super-secret-key-change-in-production")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    # Use a fallback only if .env is missing, but log it
+    print("WARNING: JWT_SECRET_KEY not found in .env, using default.")
+    SECRET_KEY = "your-super-secret-key-change-in-production"
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7

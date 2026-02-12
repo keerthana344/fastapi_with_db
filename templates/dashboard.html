@@ -299,8 +299,16 @@
 
     // Get user details and auth token from cookie
     async function initializeChat() {
+        const sendBtn = document.getElementById('sendBtn');
+        const messageInput = document.getElementById('messageInput');
+
+        // Disable UI during initialization
+        sendBtn.disabled = true;
+        messageInput.disabled = true;
+
         const userEmail = getCookie('user');
         if (!userEmail) {
+            console.warn('No user cookie found, redirecting to signin');
             window.location.href = '/signin';
             return;
         }
@@ -322,6 +330,8 @@
             });
 
             if (response.status === 401) {
+                console.warn('Session expired (401), clearing token and redirecting');
+                localStorage.removeItem('auth_token');
                 window.location.href = '/signin';
                 return;
             }
@@ -330,11 +340,21 @@
                 const userData = await response.json();
                 currentUserId = userData.id;
                 await loadChatHistory();
+
+                // Re-enable UI
+                sendBtn.disabled = false;
+                messageInput.disabled = false;
+                messageInput.focus();
             } else {
-                console.error('Failed to get user details');
+                console.error('Failed to get user details:', response.statusText);
+                appendMessage('Error: Could not verify your session. Please try logging in again.', 'ai', true);
             }
         } catch (error) {
             console.error('Error initializing chat:', error);
+            // Re-enable UI so user can see the error message
+            sendBtn.disabled = false;
+            messageInput.disabled = false;
+            appendMessage('Connection error: Please ensure the backend server is running at http://127.0.0.1:8000', 'ai', true);
         }
     }
 
@@ -348,6 +368,7 @@
             });
 
             if (response.status === 401) {
+                localStorage.removeItem('auth_token');
                 window.location.href = '/signin';
                 return;
             }
@@ -368,6 +389,8 @@
                     });
                     scrollToBottom();
                 }
+            } else {
+                console.error('Failed to load history:', response.status);
             }
         } catch (error) {
             console.error('Error loading chat history:', error);
@@ -379,7 +402,7 @@
         const input = document.getElementById('messageInput');
         const message = input.value.trim();
 
-        if (!message) return;
+        if (!message || !authToken) return;
 
         // Disable input while sending
         input.disabled = true;
@@ -408,6 +431,7 @@
             });
 
             if (response.status === 401) {
+                localStorage.removeItem('auth_token');
                 window.location.href = '/signin';
                 return;
             }
@@ -418,12 +442,14 @@
                 const data = await response.json();
                 appendMessage(data.response, 'ai', true);
             } else {
-                appendMessage('Sorry, I encountered an error. Please try again.', 'ai', true);
+                const errorData = await response.json().catch(() => ({}));
+                console.error('AI Error:', errorData);
+                appendMessage(`Sorry, I encountered an error (${response.status}). Please try again.`, 'ai', true);
             }
         } catch (error) {
             removeLoading(loadingId);
             console.error('Error sending message:', error);
-            appendMessage('Sorry, I encountered an error. Please try again.', 'ai', true);
+            appendMessage('Network error: Could not reach the server. Please check your connection.', 'ai', true);
         }
 
         // Re-enable input
