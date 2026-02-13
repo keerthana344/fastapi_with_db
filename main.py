@@ -7,6 +7,8 @@ import os
 
 # Load environment variables early
 load_dotenv()
+print("--- BACKEND SERVER VERSION: antigravity_v3 (Auto-Auth Active) ---")
+
 
 from db import get_db, DATABASE_URL
 from sqlalchemy import create_engine
@@ -84,7 +86,8 @@ async def settings_page(request: Request):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok"}
+    return {"status": "ok", "agent": "antigravity_v2"}
+
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,4 +1,5 @@
-$scriptsMatched = Get-WmiObject Win32_Process -Filter "Name LIKE '%python%' AND CommandLine LIKE '%uvicorn main:app%'"
+# Find any python process running uvicorn with main:app
+$scriptsMatched = Get-WmiObject Win32_Process -Filter "Name LIKE '%python%' AND CommandLine LIKE '%uvicorn%'" | Where-Object { $_.CommandLine -like "*main:app*" }
 
 if ($scriptsMatched) {
     foreach ($proc in $scriptsMatched) {
@@ -10,3 +11,4 @@ if ($scriptsMatched) {
 else {
     Write-Host "No running backend process found."
 }
+
