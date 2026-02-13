@@ -86,7 +86,7 @@ async def settings_page(request: Request):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "agent": "antigravity_v2"}
+    return {"status": "ok", "agent": "antigravity_v3"}
 
 
 if __name__ == "__main__":
