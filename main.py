@@ -23,6 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
 # Add CORS middleware
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # For development; refine for production
@@ -32,10 +33,11 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(user_router)
-app.include_router(ai_response_router)
-app.include_router(email_router)
-app.include_router(history_router)
+# Include routers
+app.include_router(user_router, prefix="/api")
+app.include_router(ai_response_router, prefix="/api")
+app.include_router(email_router, prefix="/api")
+app.include_router(history_router, prefix="/api")
 
 # Create database tables
 engine = create_engine(DATABASE_URL)
